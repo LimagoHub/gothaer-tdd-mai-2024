@@ -22,7 +22,7 @@ public class Schwein {
     }
 
     public final void setName(String name) {
-        if("Elsa".equalsIgnoreCase(name)) throw new IllegalArgumentException("Unerlaubter Name");
+        if(name == null || "Elsa".equalsIgnoreCase(name)) throw new IllegalArgumentException("Unerlaubter Name");
         this.name = name;
     }
 
