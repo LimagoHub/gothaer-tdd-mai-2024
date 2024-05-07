@@ -1,7 +1,0 @@
-org\example\persistence\Person.class
-org\example\service\impl\PersonenServiceImpl.class
-org\example\service\PersonenServiceException.class
-org\example\persistence\Person$PersonBuilder.class
-org\example\persistence\PersonenRepository.class
-org\example\App.class
-org\example\service\PersonenService.class
