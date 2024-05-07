@@ -1,8 +1,10 @@
 package de.gothaer.tiere;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SchweinTest {
@@ -20,7 +22,10 @@ class SchweinTest {
     @Test
     void ctor_default_objectCorrectIntializied() {
         assertEquals("Nobody", objectUnderTest.getName());
+        assertThat(objectUnderTest.getName()).isEqualTo("Nobody");
+
         assertEquals(initialWeight, objectUnderTest.getGewicht());
+
     }
 
     @Test

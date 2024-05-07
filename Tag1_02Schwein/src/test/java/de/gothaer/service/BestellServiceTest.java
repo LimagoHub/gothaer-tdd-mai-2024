@@ -75,21 +75,6 @@ class BestellServiceTest {
         Mockito.verify(eventServiceMock).fireEvent("nicht erreichbar");
 
     }
-    @Test
-    void demo() throws Exception{
-        when(creditCardServiceMock.check(anyString(),anyDouble()))
-                .thenReturn(true, false)
-                ;
 
-        doThrow(Exception.class).when(eventServiceMock).fireEvent(anyString());
-
-        System.out.println(creditCardServiceMock.check("abc", 100));
-        System.out.println(creditCardServiceMock.check("abc", 100));
-        System.out.println(creditCardServiceMock.check("abc", 100));
-        System.out.println(creditCardServiceMock.check("abc", 100));
-
-        verify(creditCardServiceMock, atLeast(1)).check("abc", 100);
-
-    }
 
 }
