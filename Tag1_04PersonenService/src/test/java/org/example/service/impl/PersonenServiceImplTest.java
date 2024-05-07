@@ -14,6 +14,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoRule;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -27,14 +29,14 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.WARN)
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class PersonenServiceImplTest {
 
     @InjectMocks
     private PersonenServiceImpl objectUnderTest;
     @Mock
     private PersonenRepository personenRepositoryMock;
-    @Mock
+    @Mock(lenient = false)
     private BlackListService blackListServiceMock;
 
     @Test
