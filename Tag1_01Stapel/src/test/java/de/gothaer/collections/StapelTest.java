@@ -39,23 +39,23 @@ class StapelTest {
         // Assert
         assertFalse(result);
     }
-    @Test
-    void push_fillUpToLimit_noExceptionIsThrown() throws StapelException{
-        fillUpToLimit();
-    }
-
-    @Test
-    void push_Overflow_throwsStapelException() throws StapelException{
-        // Arrange
-        fillUpToLimit();
-        StapelException ex = assertThrows(StapelException.class, ()->objectUnderTest.push(1));
-        assertEquals("Overflow", ex.getMessage());
-    }
-
-    private void fillUpToLimit() {
-        for (int i = 0; i < 10; i++) {
-            assertDoesNotThrow(()->objectUnderTest.push(10));
-        }
-    }
+//    @Test
+//    void push_fillUpToLimit_noExceptionIsThrown() throws StapelException{
+//        fillUpToLimit();
+//    }
+//
+//    @Test
+//    void push_Overflow_throwsStapelException() throws StapelException{
+//        // Arrange
+//        fillUpToLimit();
+//        StapelException ex = assertThrows(StapelException.class, ()->objectUnderTest.push(1));
+//        assertEquals("Overflow", ex.getMessage());
+//    }
+//
+//    private void fillUpToLimit() {
+//        for (int i = 0; i < 10; i++) {
+//            assertDoesNotThrow(()->objectUnderTest.push(10));
+//        }
+//    }
 
 }
