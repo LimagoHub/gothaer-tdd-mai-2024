@@ -5,12 +5,11 @@ import de.gothaer.gui.Euro2DollarRechnerView;
 import de.gothaer.model.Euro2DollarRechner;
 
 public class Euro2DollarPresenterImpl implements Euro2DollarPresenter {
-	
+
 	private Euro2DollarRechnerView view;
 	private Euro2DollarRechner model;
-	
-	
-	
+
+
 	/* (non-Javadoc)
 	 * @see de.gui.presenter.IEuro2DollarPresenter#getView()
 	 */
@@ -46,51 +45,51 @@ public class Euro2DollarPresenterImpl implements Euro2DollarPresenter {
 	/* (non-Javadoc)
 	 * @see de.gui.presenter.IEuro2DollarPresenter#rechnen()
 	 */
-
-
-	/* (Nicht Aufgabe dieser Function den Button zu enablen bzw. disablen)
-		Eurowert als String aus der Maske holen
-		Eurowert in einen Double wandeln ( Im Fehlerfall -> schreiben Fehlermeldung ins Dollarfeld)
-		model aufrufen (Im Fehlerfall -> schreiben Fehlermeldung ins Dollarfeld)
-		ergebnis umwandeln in String
-		Umgewandeltes Ergenis in die Maske schreiben
-	 */
 	@Override
 	public void onRechnen() {
+
 		try {
-			double euro = Double.parseDouble(view.getEuro());
+			double euro = Double.valueOf(view.getEuro());
 			double dollar = model.calculateEuro2Dollar(euro);
 			view.setDollar(String.format("%.2f", dollar));
-		} catch (NumberFormatException | NullPointerException e) {
+		} catch (NullPointerException e) {
+			view.setDollar("Kein Wert gefunden");
+		} catch (NumberFormatException e) {
 			view.setDollar("Keine Zahl");
 		} catch (RuntimeException e) {
 			view.setDollar("Fehler im Service");
 		}
 
+
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see de.gui.presenter.IEuro2DollarPresenter#beenden()
 	 */
 	@Override
-	public void onBeenden() {  
+	public void onBeenden() {
 		view.close();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see de.gui.presenter.IEuro2DollarPresenter#populateItems()
 	 */
 	@Override
 	public void onPopulateItems() {
-		view.setEuro("0");
 		view.setDollar("0");
+		view.setEuro("0");
 		view.setRechnenEnabled(true);
+
 	}
 
 	@Override
 	public void updateRechnenActionState() {
-
+		try {
+			Double.valueOf(getView().getEuro());
+			getView().setRechnenEnabled(true);
+		} catch (RuntimeException e) {
+			getView().setRechnenEnabled(false);
+		}
 
 	}
-
 }

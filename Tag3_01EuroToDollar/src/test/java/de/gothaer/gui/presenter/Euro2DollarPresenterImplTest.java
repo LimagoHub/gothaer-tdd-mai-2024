@@ -21,12 +21,8 @@ import org.mockito.verification.VerificationMode;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
-@MockitoSettings(strictness = Strictness.STRICT_STUBS)
 @ExtendWith(MockitoExtension.class)
 class Euro2DollarPresenterImplTest {
-
-    private final String VALID_EURO_VALUE ="10.0";
 
     @InjectMocks
     private Euro2DollarPresenterImpl objectUnderTest;
@@ -37,79 +33,66 @@ class Euro2DollarPresenterImplTest {
     @Mock
     private Euro2DollarRechner modelMock;
 
-
+    private static final String VALID_EURO_VALUE = "10.0";
     @Test
-    void onBeenden_happyDay_maskDisposed() {
-        objectUnderTest.onBeenden();
-        verify(viewMock).close();
+    void onBeenden_happyDay_maskShouldBeClosed() {
+        assertDoesNotThrow(()->objectUnderTest.onBeenden());
+        verify(viewMock, times(1)).close();
     }
-
     @Test
-    void onPopulateItems_(){
-        objectUnderTest.onPopulateItems();
-        verify(viewMock).setEuro("0");
-        verify(viewMock).setDollar("0");
-        verify(viewMock).setRechnenEnabled(true);
+    void onPopulateItems_happyDay_maskShouldBeInitialized() {
+        assertDoesNotThrow(()->objectUnderTest.onPopulateItems());
+        verify(viewMock, times(1)).setDollar("0");
+        verify(viewMock, times(1)).setEuro("0");
+        verify(viewMock, times(1)).setRechnenEnabled(true);
+    }
+    @Nested
+    class onRechnen{
+        @ParameterizedTest
+        @CsvSource({",Kein Wert gefunden","NAN,Keine Zahl"})
+        void onRechnen_invalidValueInEuroField_errorMessageInDollarField(String fieldValue, String expectedMessage){
+            when(viewMock.getEuro()).thenReturn(fieldValue);
+            objectUnderTest.onRechnen();
+            verify(viewMock).setDollar(expectedMessage);
+        }
+        @Test
+        void onRechnen_unexpectedRuntimeExceptionInUnderlyingService_errorMessageInDollarField(){
+
+            when(viewMock.getEuro()).thenReturn(VALID_EURO_VALUE);
+            when(modelMock.calculateEuro2Dollar(anyDouble())).thenThrow(new ArithmeticException("Upps"));
+            objectUnderTest.onRechnen();
+            verify(viewMock).setDollar("Fehler im Service");
+        }
+
+
+        @Test
+        void onRechnen_happyDay_resultInDollarField(){
+
+            when(viewMock.getEuro()).thenReturn(VALID_EURO_VALUE);
+            when(modelMock.calculateEuro2Dollar(anyDouble())).thenReturn(4711.1);
+            objectUnderTest.onRechnen();
+            verify(viewMock).setDollar("4711,10");
+            verify(modelMock).calculateEuro2Dollar(10.0);
+        }
     }
 
-    @ParameterizedTest
-    @NullAndEmptySource
-    @ValueSource(strings={"Not a number"})
-    void onRechnen_NullValueInEuroField_errorMessageInDollarField(String euroFieldValue) {
-        InOrder inOrder = inOrder(viewMock);
-        //Arrange
-        when(viewMock.getEuro()).thenReturn(euroFieldValue);
-        objectUnderTest.onRechnen();
-        inOrder.verify(viewMock).getEuro();
-        inOrder.verify(viewMock).setDollar("Keine Zahl");
+    @Nested
+    class updateRechnenActionState {
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {"  ", "Herbert", "\n"})
+        void updateRechnenActionState_invalidValueInEuroField_actionDisabled(String invalid) {
+            when(viewMock.getEuro()).thenReturn(invalid);
+            objectUnderTest.updateRechnenActionState();
+            verify(viewMock).setRechnenEnabled(false);
+        }
+
+        @Test
+        void updateRechnenActionState_validValueInEuroField_actionDisabled() {
+            when(viewMock.getEuro()).thenReturn(VALID_EURO_VALUE);
+            objectUnderTest.updateRechnenActionState();
+            verify(viewMock).setRechnenEnabled(true);
+        }
     }
-
-    @Test
-    void onRechnen_unexcpectedExceptionInUnderlyingServce_errorMessageInDollarField() {
-        //  Arrange
-        InOrder inOrder = inOrder(viewMock, modelMock);
-        when(viewMock.getEuro()).thenReturn(VALID_EURO_VALUE);
-        when(modelMock.calculateEuro2Dollar(anyDouble())).thenThrow(ArrayIndexOutOfBoundsException.class);
-
-        // Action
-        objectUnderTest.onRechnen();
-
-        // Assertion
-        inOrder.verify(viewMock).getEuro();
-        inOrder.verify(modelMock).calculateEuro2Dollar(anyDouble());
-        inOrder.verify(viewMock).setDollar("Fehler im Service");
-    }
-
-//    @Test
-//    void onRechnen_valiEuroValueInEuroField_valuePassedToService() {
-//        //  Arrange
-//        InOrder inOrder = inOrder(viewMock, modelMock);
-//        when(viewMock.getEuro()).thenReturn(VALID_EURO_VALUE);
-//
-//        // Action
-//        objectUnderTest.onRechnen();
-//
-//        // Assertion
-//        inOrder.verify(viewMock).getEuro();
-//        inOrder.verify(modelMock).calculateEuro2Dollar(10.0);
-//
-//    }
-
-    @Test
-    void onRechnen_HappyDay_dollarValueInDollarField() {
-        //  Arrange
-        //InOrder inOrder = inOrder(viewMock, modelMock);
-        when(viewMock.getEuro()).thenReturn(VALID_EURO_VALUE);
-        when(modelMock.calculateEuro2Dollar(10.0)).thenReturn(4711.5);
-
-        // Action
-        objectUnderTest.onRechnen();
-
-        // Assertion
-        verify(viewMock).getEuro();
-        verify(modelMock).calculateEuro2Dollar(10.0);
-        verify(viewMock).setDollar("4711,50");
-    }
-
 
 }
