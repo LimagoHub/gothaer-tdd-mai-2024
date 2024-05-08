@@ -4,6 +4,7 @@ import org.example.persistence.Person;
 import org.example.persistence.PersonenRepository;
 import org.example.service.BlackListService;
 import org.example.service.PersonenServiceException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,43 +40,61 @@ class PersonenServiceImplTest {
     @Mock(lenient = false)
     private BlackListService blackListServiceMock;
 
-    @Test
-    void speichern_personIsNull_throwsPersonenServiceException() throws PersonenServiceException {
-        // Arrange
-        // Action + Assertion
-        PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(null));
-        assertEquals("Person darf nicht null sein.", ex.getMessage());
+    @Nested
+    class Validation {
 
+        @Test
+        void speichern_personIsNull_throwsPersonenServiceException() throws PersonenServiceException {
+            // Arrange
+            final Person invalid = null;
+            // Action + Assertion
+            PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalid));
+            assertEquals("Person darf nicht null sein.", ex.getMessage());
+
+        }
+
+        @Test
+        void speichern_vornameIsNull_throwsPersonenServiceException() throws PersonenServiceException {
+            // Arrange
+            final Person invalidPerson = Person.builder().vorname(null).nachname("Doe").build();
+            // Action + Assertion
+            PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalidPerson));
+            assertEquals("Vorname muss min. 2 Zeichen enthalten.", ex.getMessage());
+
+        }
+
+        @Test
+        void speichern_vornameZuKurz_throwsPersonenServiceException() throws PersonenServiceException {
+            // Arrange
+            final Person invalidPerson = Person.builder().vorname("J").nachname("Doe").build();
+            // Action + Assertion
+            PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalidPerson));
+            assertEquals("Vorname muss min. 2 Zeichen enthalten.", ex.getMessage());
+
+        }
+
+        @Test
+        void speichern_NachnameZuKurz_throwsPersonenServiceException() throws PersonenServiceException {
+            // Arrange
+            final Person invalidPerson = Person.builder().vorname("Jay").nachname("D").build();
+            // Action + Assertion
+            PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalidPerson));
+            assertEquals("Nachname muss min. 2 Zeichen enthalten.", ex.getMessage());
+
+        }
+
+        @Test
+        void speichern_NachnameNull_throwsPersonenServiceException() throws PersonenServiceException {
+            // Arrange
+            final Person invalidPerson = Person.builder().vorname("Jay").nachname(null).build();
+            // Action + Assertion
+            PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalidPerson));
+            assertEquals("Nachname muss min. 2 Zeichen enthalten.", ex.getMessage());
+
+        }
     }
 
-    @Test
-    void speichern_vornameIsNull_throwsPersonenServiceException() throws PersonenServiceException {
-        // Arrange
-        final Person invalidPerson = Person.builder().vorname(null).nachname("Doe").build();
-        // Action + Assertion
-        PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalidPerson));
-        assertEquals("Vorname muss min. 2 Zeichen enthalten.", ex.getMessage());
 
-    }
-
-    @Test
-    void speichern_vornameZuKurz_throwsPersonenServiceException() throws PersonenServiceException {
-        // Arrange
-        final Person invalidPerson = Person.builder().vorname("J").nachname("Doe").build();
-        // Action + Assertion
-        PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalidPerson));
-        assertEquals("Vorname muss min. 2 Zeichen enthalten.", ex.getMessage());
-
-    }
-    @Test
-    void speichern_NachnameZuKurz_throwsPersonenServiceException() throws PersonenServiceException {
-        // Arrange
-        final Person invalidPerson = Person.builder().vorname("Jay").nachname("D").build();
-        // Action + Assertion
-        PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(invalidPerson));
-        assertEquals("Nachname muss min. 2 Zeichen enthalten.", ex.getMessage());
-
-    }
     @Test
     void speichern_PersonIsBlackListed_throwsPersonenServiceException() throws PersonenServiceException {
         // Arrange
@@ -106,6 +125,22 @@ class PersonenServiceImplTest {
        when(blackListServiceMock.isBlacklisted(validPerson)).thenReturn(false);
         objectUnderTest.speichern(validPerson);
         verify(personenRepositoryMock,times(1)).save(validPerson);
+    }
+    @ParameterizedTest
+    @MethodSource("providePersonsForSpeichern")
+    void speichern_simplevalidation(Person p, String message) {
+        PersonenServiceException ex = assertThrows(PersonenServiceException.class, () -> objectUnderTest.speichern(p));
+        assertEquals(message, ex.getMessage());
+    }
+    private static Stream<Arguments> providePersonsForSpeichern() {
+        return Stream.of(
+                Arguments.of((Person)null, "Person darf nicht null sein."),
+                Arguments.of(Person.builder().id("1").vorname("John").nachname(null).build(), "Nachname muss min. 2 Zeichen enthalten."),
+                Arguments.of(Person.builder().id("1").vorname("John").nachname("D").build(), "Nachname muss min. 2 Zeichen enthalten."),
+                Arguments.of(Person.builder().id("1").vorname(null).nachname("Doe").build(), "Vorname muss min. 2 Zeichen enthalten."),
+                Arguments.of(Person.builder().id("1").vorname("J").nachname("Doe").build(), "Vorname muss min. 2 Zeichen enthalten.")
+
+        );
     }
 
 }
