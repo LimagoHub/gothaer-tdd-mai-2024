@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -119,12 +120,17 @@ class PersonenServiceImplTest {
     }
     @Test
     void speichern_HappyDay_PersonPassedToRepo() throws PersonenServiceException {
+
+        InOrder inOrder = inOrder(blackListServiceMock, personenRepositoryMock);
         // Arrange
         final Person validPerson= Person.builder().vorname("Alex").nachname("Doe").build();
         // Action
-       when(blackListServiceMock.isBlacklisted(validPerson)).thenReturn(false);
+        when(blackListServiceMock.isBlacklisted(validPerson)).thenReturn(false);
         objectUnderTest.speichern(validPerson);
-        verify(personenRepositoryMock,times(1)).save(validPerson);
+        inOrder.verify(blackListServiceMock,times(1)).isBlacklisted(validPerson);
+        inOrder.verify(personenRepositoryMock,times(1)).save(validPerson);
+
+
     }
     @ParameterizedTest
     @MethodSource("providePersonsForSpeichern")

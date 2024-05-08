@@ -9,6 +9,8 @@ public class Euro2DollarRechnerImpl implements Euro2DollarRechner {
 	@Override
 	public double calculateEuro2Dollar(double euro) {
 		// zukünftig potentiell RuntimeException möglich
+
+		//double wechselkurs = exchangeservice.getrate("USD");
 		return euro * 1.1;
 	}
 
